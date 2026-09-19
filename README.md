@@ -43,19 +43,13 @@ Instalador em `out/printtray-<versão>-x86_64.exe`.
 
 ### GitHub Actions
 
-- **CI:** `.github/workflows/build-windows.yml` — build do instalador Windows em push/PR.
-- **Release:** `.github/workflows/release-windows.yml` — publica no GitHub Releases.
+Workflow único: `.github/workflows/release.yml` (somente **`master`**).
 
-Para liberar uma versão:
+A cada push em `master`:
 
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-Ou rode o workflow **release-windows** manualmente (`workflow_dispatch`) informando a versão.
-
-A tag/versão sobrescreve `Constants.VERSION` no build do release.
+1. Faz bump automático de `Constants.VERSION` (remove `-SNAPSHOT` ou incrementa o patch)
+2. Compila o instalador Windows (`printtray-<versão>-x86_64.exe`)
+3. Commita a versão com `[skip ci]`, cria a tag `vX.Y.Z` e publica no **GitHub Releases**
 
 ## Licença
 

@@ -63,6 +63,9 @@ public class PrintSocketClient {
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
+        if (LocalhostPolicy.rejectUnlessLoopback(session)) {
+            return;
+        }
         log.info("Connection opened from {} on socket port {}", session.getRemoteAddress(), ((InetSocketAddress)session.getLocalAddress()).getPort());
         trayManager.displayInfoMessage("Client connected");
 
@@ -139,7 +142,7 @@ public class PrintSocketClient {
                     request.markNewConnection(Certificate.UNKNOWN);
                 }
 
-                if (allowedFromDialog(UID, request, "connect to " + Constants.ABOUT_TITLE,
+                if (allowedFromDialog(session, UID, request, "connect to " + Constants.ABOUT_TITLE,
                                       findDialogPosition(session, json.optJSONObject("position")))) {
                     sendResult(session, UID, null);
                 } else {
@@ -153,7 +156,10 @@ public class PrintSocketClient {
             //check request signature
             SocketMethod call = SocketMethod.findFromCall(json.optString("call"));
             if (request.hasCertificate() && call.isDialogShown()) {
-                if (json.optLong("timestamp") + Constants.VALID_SIGNING_PERIOD < System.currentTimeMillis()
+                if (LocalhostPolicy.isLoopback(session)) {
+                    // Localhost-only silent mode: skip certificate/signature gate
+                    request.setValidity(Request.Validity.TRUSTED);
+                } else if (json.optLong("timestamp") + Constants.VALID_SIGNING_PERIOD < System.currentTimeMillis()
                         || json.optLong("timestamp") - Constants.VALID_SIGNING_PERIOD > System.currentTimeMillis()) {
                     //bad timestamps use the expired certificate
                     log.warn("Expired signature on request");
@@ -262,7 +268,7 @@ public class PrintSocketClient {
         }
 
         if (call.isDialogShown()
-                && !allowedFromDialog(UID, request, prompt, findDialogPosition(session, json.optJSONObject("position")))) {
+                && !allowedFromDialog(session, UID, request, prompt, findDialogPosition(session, json.optJSONObject("position")))) {
             sendError(session, UID, "Request blocked");
             return;
         }
@@ -690,8 +696,14 @@ public class PrintSocketClient {
         }
     }
 
-    private boolean allowedFromDialog(String UID, Request request, String prompt, Point position) {
-        //If cert can be resolved before the lock, do so and return
+    private boolean allowedFromDialog(Session session, String UID, Request request, String prompt, Point position) {
+        // PrintTray: silent allow for localhost-only connections (no certificate dialog)
+        if (LocalhostPolicy.isLoopback(session)) {
+            log.debug("Silent allow for localhost request uid={} prompt={}", UID, prompt);
+            return true;
+        }
+
+        // Non-localhost must never reach here when bind is 127.0.0.1, but keep dialog path for safety
         if (request.hasBlockedCert()) {
             return false;
         }

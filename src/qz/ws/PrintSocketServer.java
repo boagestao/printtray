@@ -57,11 +57,12 @@ public class PrintSocketServer {
             PrintSocketServer.setTrayManager(new TrayManager());
         });
 
-        wssHost = PrefsSearch.getString(ArgValue.SECURITY_WSS_HOST, certManager.getProperties());
+        websocketPorts = PrintTrayPorts.resolve();
+        wssHost = LocalhostPolicy.resolveBindHost(PrefsSearch.getString(ArgValue.SECURITY_WSS_HOST, certManager.getProperties()));
         wssAllowedOrigins = PrefsSearch.getStringArray(ArgValue.SECURITY_WSS_ALLOWORIGIN, certManager.getProperties());
-        httpsOnly = PrefsSearch.getBoolean(ArgValue.SECURITY_WSS_HTTPSONLY, certManager.getProperties());
+        // Prefer insecure ws://127.0.0.1 for browser apps; silent localhost mode does not need wss.
+        httpsOnly = false;
         sniStrict = PrefsSearch.getBoolean(ArgValue.SECURITY_WSS_SNISTRICT, certManager.getProperties());
-        websocketPorts = WebsocketPorts.parseFromProperties();
 
         server = findAvailableSecurePort(certManager);
 
@@ -78,6 +79,7 @@ public class PrintSocketServer {
         while(!running.get() && websocketPorts.insecureBoundsCheck()) {
             try {
                 ServerConnector connector = new ServerConnector(server);
+                connector.setHost(wssHost);
                 connector.setPort(websocketPorts.getInsecurePort());
                 if(httpsOnly) {
                     server.setConnectors(new Connector[] {secureConnector});
@@ -107,6 +109,7 @@ public class PrintSocketServer {
 
                 context.addServlet(httpServlet, "/");
                 context.addServlet(httpServlet, "/json");
+                context.addServlet(httpServlet, "/status");
 
                 server.setHandler(context);
                 server.setStopAtShutdown(true);
@@ -127,7 +130,7 @@ public class PrintSocketServer {
 
                 running.set(true);
 
-                log.info("Server started on port(s) " + getPorts(server));
+                log.info("Server started on port(s) {} (bound to {})", getPorts(server), wssHost);
                 websocketPorts.setHttpsOnly(httpsOnly);
                 websocketPorts.setHttpOnly(secureConnector == null);
                 trayManager.setServer(server, websocketPorts);

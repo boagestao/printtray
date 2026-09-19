@@ -1,0 +1,39 @@
+name: build-windows
+
+on:
+  push:
+    branches: [master, main, 'feat/**']
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: liberica
+
+      - name: Install Ant and NSIS
+        run: choco install ant nsis -y --no-progress
+
+      - name: Build Windows installer
+        shell: cmd
+        run: ant "-Dtarget.arch=${{ matrix.arch }}" nsis
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: printtray-windows-${{ matrix.arch }}
+          path: out/printtray-*.exe
+          if-no-files-found: error

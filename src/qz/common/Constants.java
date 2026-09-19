@@ -23,32 +23,39 @@ public class Constants {
     public static final String ALLOW_FILE = "allowed";
     public static final String TEMP_FILE = "temp";
     public static final String LOG_FILE = "debug";
-    public static final String PROPS_FILE = "qz-tray"; // .properties extension is assumed
+    public static final String PROPS_FILE = "printtray"; // .properties extension is assumed
     public static final String PREFS_FILE = "prefs"; // .properties extension is assumed
     public static final String[] PERSIST_PROPS = {"file.whitelist", "file.allow", "networking.hostname", "networking.port", STEAL_WEBSOCKET_PROPERTY };
     public static final String AUTOSTART_FILE = ".autostart";
-    public static final String DATA_DIR = "qz";
+    public static final String DATA_DIR = "printtray";
 
     public static final int BORDER_PADDING = 10;
 
-    public static final String ABOUT_TITLE = "QZ Tray";
-    public static final String ABOUT_EMAIL = "support@qz.io";
-    public static final String ABOUT_URL = "https://qz.io";
-    public static final String ABOUT_COMPANY = "QZ Industries, LLC";
-    public static final String ABOUT_CITY = "Canastota";
-    public static final String ABOUT_STATE = "NY";
-    public static final String ABOUT_COUNTRY = "US";
+    /**
+     * Portas fixas do PrintTray (acima de 35000, escolhidas para o projeto — não aleatórias em runtime).
+     * Manter sincronizado com {@code frontend/src/lib/printtray/types.ts}.
+     */
+    public static final int WEBSOCKET_PORT = 37241;
+    public static final int WEBSOCKET_SECURE_PORT = 37242;
 
-    public static final String ABOUT_LICENSING_URL = Constants.ABOUT_URL + "/licensing";
-    public static final String ABOUT_SUPPORT_URL = Constants.ABOUT_URL + "/support";
-    public static final String ABOUT_PRIVACY_URL = Constants.ABOUT_URL + "/privacy";
-    public static final String ABOUT_DOWNLOAD_URL = Constants.ABOUT_URL + "/download";
+    public static final String ABOUT_TITLE = "PrintTray";
+    public static final String ABOUT_EMAIL = "suporte@boagestao.com.br";
+    public static final String ABOUT_URL = "https://github.com/boagestao/printtray";
+    public static final String ABOUT_COMPANY = "Boa Gestão";
+    public static final String ABOUT_CITY = "";
+    public static final String ABOUT_STATE = "";
+    public static final String ABOUT_COUNTRY = "BR";
 
-    public static final String VERSION_CHECK_URL = "https://api.github.com/repos/qzind/tray/releases";
-    public static final String VERSION_DOWNLOAD_URL = "https://github.com/qzind/tray/releases";
+    public static final String ABOUT_LICENSING_URL = Constants.ABOUT_URL + "#license";
+    public static final String ABOUT_SUPPORT_URL = Constants.ABOUT_URL + "/issues";
+    public static final String ABOUT_PRIVACY_URL = Constants.ABOUT_URL;
+    public static final String ABOUT_DOWNLOAD_URL = Constants.ABOUT_URL + "/releases";
+
+    public static final String VERSION_CHECK_URL = "https://api.github.com/repos/boagestao/printtray/releases";
+    public static final String VERSION_DOWNLOAD_URL = "https://github.com/boagestao/printtray/releases";
     public static final boolean ENABLE_DIAGNOSTICS = true; // Diagnostics menu (logs, etc)
 
-    public static final String BRAND_COLOR_HEX = "#44aa53";
+    public static final String BRAND_COLOR_HEX = "#2563eb";
     @SuppressWarnings("ConstantValue")
     public static final boolean IS_REBRANDED = !ABOUT_EMAIL.equals("support@qz.io");
 
@@ -103,7 +110,8 @@ public class Constants {
     public static final String PDF_PRINT = ABOUT_TITLE + " PDF Print";
     public static final String HTML_PRINT = ABOUT_TITLE + " HTML Print";
 
-    public static final Integer[] DEFAULT_WSS_PORTS = {8181, 8282, 8383, 8484};
-    public static final Integer[] DEFAULT_WS_PORTS = {8182, 8283, 8384, 8485};
+    // Portas fixas do projeto (>35000). Ver WEBSOCKET_PORT / WEBSOCKET_SECURE_PORT.
+    public static final Integer[] DEFAULT_WSS_PORTS = {WEBSOCKET_SECURE_PORT};
+    public static final Integer[] DEFAULT_WS_PORTS = {WEBSOCKET_PORT};
     public static final Integer[] CUPS_RSS_PORTS = {8586, 8687, 8788, 8889};
 }

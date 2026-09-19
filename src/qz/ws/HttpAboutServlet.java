@@ -51,12 +51,38 @@ public class HttpAboutServlet extends DefaultServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", allowOrigin);
-        if ("application/json".equals(request.getHeader("Accept")) || "/json".equals(request.getServletPath())) {
+        if ("/status".equals(request.getServletPath())) {
+            generatePrintTrayStatus(response);
+        } else if ("application/json".equals(request.getHeader("Accept")) || "/json".equals(request.getServletPath())) {
             generateJsonResponse(request, response);
         } else if ("application/x-x509-ca-cert".equals(request.getHeader("Accept")) || request.getServletPath().startsWith("/cert/")) {
             generateCertResponse(request, response);
         } else {
             generateHtmlResponse(request, response);
+        }
+    }
+
+    private void generatePrintTrayStatus(HttpServletResponse response) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("ok", true);
+            json.put("name", ABOUT_TITLE);
+            json.put("version", VERSION.toString());
+            json.put("localhostOnly", true);
+            json.put("silentPrint", true);
+            JSONObject websocket = new JSONObject();
+            websocket.put("host", "127.0.0.1");
+            websocket.put("insecure", WEBSOCKET_PORT);
+            websocket.put("secure", WEBSOCKET_SECURE_PORT);
+            json.put("websocket", websocket);
+
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json;charset=UTF-8");
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            response.getOutputStream().write(json.toString(JSON_INDENT).getBytes(StandardCharsets.UTF_8));
+        } catch(Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            log.warn("Exception occurred writing PrintTray status", e);
         }
     }
 

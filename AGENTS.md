@@ -14,6 +14,7 @@ Agent local de impressão (fork QZ Tray) para o ERP: PDF silencioso só em local
 - Portas fixas: **37241** (ws) / **37242** (wss). Sincronizar com `frontend/src/lib/printtray/types.ts`.
 - Status: `GET http://127.0.0.1:37241/status`
 - Frontend: `frontend/src/lib/printtray`
+- PDF de etiqueta: `PrintPDF` aplica `options.size` como tamanho real da folha (`paper.setSize`); `pageWidth`/`pageHeight` no item PDF é o workaround do QZ para Microsoft Print to PDF.
 - Artefato de release: `out/printtray-<versão>-x86_64.exe`
 - Push em `master` → bump de versão + release automático (`[skip ci]` no commit de bump)
 - LGPL 2.1: manter source aberto ao redistribuir o binário.

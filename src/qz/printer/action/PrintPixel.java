@@ -99,7 +99,8 @@ public abstract class PrintPixel {
 
         log.trace("Drawable area: {},{}:{},{}", pageX, pageY, pageW, pageH);
         if (pageW > 0 && pageH > 0) {
-            attributes.add(new MediaPrintableArea(pageX, pageY, pageW, pageH, pxlOpts.getUnits().getMediaSizeUnits()));
+            float toIn = pxlOpts.getUnits().toInches();
+            attributes.add(new MediaPrintableArea(pageX * toIn, pageY * toIn, pageW * toIn, pageH * toIn, PrintOptions.Unit.INCH.getMediaSizeUnits()));
             paper.setImageableArea(pageX * CONVERT, pageY * CONVERT, pageW * CONVERT, pageH * CONVERT);
             page.setPaper(paper);
         } else {

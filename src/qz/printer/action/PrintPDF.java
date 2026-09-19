@@ -157,6 +157,17 @@ public class PrintPDF extends PrintPixel implements PrintProcessor {
             }
         }
 
+        // Microsoft Print to PDF / drivers sem o tamanho no Media ignoram options.size.
+        // O mesmo truque de data.options.pageWidth|pageHeight aplica o MediaBox na folha.
+        if (docWidth <= 0 && docHeight <= 0 && pxlOpts.getSize() != null) {
+            if (pxlOpts.getSize().getWidth() > 0) {
+                docWidth = pxlOpts.getSize().getWidth() * convert;
+            }
+            if (pxlOpts.getSize().getHeight() > 0) {
+                docHeight = pxlOpts.getSize().getHeight() * convert;
+            }
+        }
+
         log.debug("Parsed {} files for printing", printables.size());
     }
 
@@ -260,13 +271,16 @@ public class PrintPDF extends PrintPixel implements PrintProcessor {
                 if (docWidth <= 0) { docWidth = page.getImageableWidth(); }
                 if (docHeight <= 0) { docHeight = page.getImageableHeight(); }
 
-                paper.setImageableArea(paper.getImageableX(), paper.getImageableY(), docWidth, docHeight);
+                paper.setSize(docWidth, docHeight);
+                paper.setImageableArea(0, 0, docWidth, docHeight);
                 page.setPaper(paper);
 
-                scale = Scaling.SCALE_TO_FIT; //to get custom size we need to force scaling
-
-                //pdf uses imageable area from Paper, so this can be safely removed
+                //pdf uses imageable area from Paper; MPA no driver vira Letter/A4
                 attributes.remove(MediaPrintableArea.class);
+
+                if (pxlOpts.isScaleContent()) {
+                    scale = Scaling.SCALE_TO_FIT;
+                }
             }
 
             for(PDPage pd : doc.getPages()) {
